@@ -14,17 +14,21 @@ The explorer is designed for inspecting results and their supporting item-level 
 > Course use: AI for Chemistry / journal-club project  
 > Runtime: static HTML, CSS and JavaScript; no API key or model installation required
 
+Feel free to contact me if you need more details!
 ---
 
 ## Quick start
+
+### Option 0: the most direct way to open the static page
+For a single-file offline copy, download `explorer_v1.0.html`; its scripts, styles, data and illustration are embedded in the file.
+
+If it doesn't work, try options below or just contact me.
 
 ### Option 1: open the static page directly
 
 Download or clone the complete repository, then open `index.html` in a modern desktop browser.
 
 Do not download `index.html` alone: the page also uses `app.js`, `style.css`, the `data/` directory and the bundled image in `assets/`.
-
-For a single-file offline copy, download `explorer_v1.0.html`; its scripts, styles, data and illustration are embedded in the file.
 
 ### Option 2: run the local server
 
@@ -257,15 +261,3 @@ This repository is a **course-project archive**. Its results are exploratory and
 Before redistributing derived data, model responses or third-party materials, check the licences and terms of the original benchmark, model and software sources. This archive does not automatically relicense third-party content.
 
 ---
-
-## 中文使用提示
-
-这是一个课程项目的冻结结果网页，不是权威模型排行榜。推荐使用顺序是：
-
-1. 先在顶部选择实验；
-2. 在左侧选择模型、任务、条件、指标与统计单位；
-3. 同时查看图和数值表中的分子/分母；
-4. 点击图中单元或表格行，检查逐题或逐结构证据；
-5. 导出SVG、CSV以及筛选条件JSON，用于课程展示时留存口径。
-
-特别注意：晶体实验中的 **Author postprocessing** 会恢复空间群对称操作并重新写出CIF，不只是清理格式。因此该路径的结果代表“模型＋作者公开后处理流程”。网页没有评估能量稳定性、动力学稳定性或实验可合成性。
