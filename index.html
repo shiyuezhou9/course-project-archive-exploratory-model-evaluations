@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Chemistry Benchmark Explorer</title>
+  <meta name="description" content="Offline explorer for frozen chemistry QA, atom-index controls, and crystal generation results.">
+  <link rel="stylesheet" href="style.css?v=4">
+  <script src="data/explorer-data.js?v=4" defer></script>
+  <script src="app.js?v=4" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <div class="header-copy">
+      <p class="eyebrow">FROZEN DATA · 18 NOV 2026</p>
+      <h1>Chemistry Benchmark Explorer</h1>
+      <p>Explore real differences across models, benchmarks, and tasks before deciding the presentation story. The three experiment sections remain separate; no combined leaderboard is produced.</p>
+    </div>
+    <div class="header-status" aria-label="Data status">
+      <span class="status-pill ok">Offline snapshot</span>
+      <span class="status-pill warn">DeepSeek index: N/A</span>
+      <span class="status-pill pending">OmniChem review: pending</span>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="data-strip" aria-label="Dataset status">
+      <div><strong id="data-status">Loading the frozen dataset…</strong><span id="data-substatus"></span></div>
+      <button id="export-filter" type="button" class="secondary">Export filter JSON</button>
+    </section>
+
+    <nav class="experiment-tabs" aria-label="Experiment sections">
+      <button class="experiment-tab active" type="button" data-experiment="qa" aria-current="page">
+        <span>QA main</span><small>230 questions · 9 models</small>
+      </button>
+      <button class="experiment-tab" type="button" data-experiment="index">
+        <span>Atom-index control</span><small>10 molecules · A0/A1/A2</small>
+      </button>
+      <button class="experiment-tab" type="button" data-experiment="crystal">
+        <span>Crystal generation</span><small>12 structures · S0/S1</small>
+      </button>
+    </nav>
+
+    <div id="load-error" class="error-banner" role="alert" hidden></div>
+
+    <div class="workspace">
+      <aside class="control-panel" aria-label="Filters">
+        <div class="panel-title">
+          <p class="eyebrow">SELECTION</p>
+          <h2 id="controls-title">QA filters</h2>
+          <p id="controls-note">Filters update the chart, numerical table, item-level evidence, and exports together.</p>
+        </div>
+
+        <section id="qa-controls">
+          <fieldset class="mode-switch">
+            <legend>Exploration route</legend>
+            <button type="button" class="mode-button active" data-qa-mode="benchmark">Benchmark → models</button>
+            <button type="button" class="mode-button" data-qa-mode="model">Model → chemistry</button>
+            <button type="button" class="mode-button" data-qa-mode="compare">Models × benchmarks</button>
+          </fieldset>
+
+          <div id="qa-focus-benchmark" class="control-group">
+            <label for="qa-benchmark-focus">Benchmark</label>
+            <select id="qa-benchmark-focus"></select>
+          </div>
+          <div id="qa-focus-model" class="control-group" hidden>
+            <label for="qa-model-focus">Model</label>
+            <select id="qa-model-focus"></select>
+            <label for="qa-model-grouping">Break down by</label>
+            <select id="qa-model-grouping">
+              <option value="chemistry">Chemistry field + computational tag</option>
+              <option value="task">Evaluation task</option>
+              <option value="benchmark">Source benchmark</option>
+            </select>
+            <div id="qa-domain-scope-wrap" hidden>
+              <label for="qa-domain-scope">Chemistry lens scope</label>
+              <select id="qa-domain-scope">
+                <option value="selected">Current selected benchmarks</option>
+                <option value="chembench">ChemBench only · 90 questions</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="qa-compare-grouping-wrap" class="control-group" hidden>
+            <label for="qa-compare-grouping">Compare selected benchmarks as</label>
+            <select id="qa-compare-grouping">
+              <option value="benchmark">Source benchmarks</option>
+              <option value="chemistry">Chemistry fields + computational tag</option>
+              <option value="task">Evaluation tasks</option>
+            </select>
+          </div>
+
+          <div id="qa-model-multiselect" class="control-group">
+            <div class="control-heading"><span>Models</span><span id="qa-model-count"></span></div>
+            <div class="mini-actions">
+              <button type="button" id="qa-models-all">Select all</button>
+              <button type="button" id="qa-models-clear">Clear</button>
+            </div>
+            <div id="qa-model-checks" class="check-list"></div>
+          </div>
+
+          <div id="qa-slice-multiselect" class="control-group" hidden>
+            <div class="control-heading"><span>Benchmarks & tasks</span><span id="qa-slice-count"></span></div>
+            <div class="mini-actions">
+              <button type="button" id="qa-slices-all">Select all benchmark roots</button>
+              <button type="button" id="qa-slices-clear">Clear</button>
+            </div>
+            <div id="qa-slice-checks" class="check-list slice-tree"></div>
+          </div>
+
+          <div class="control-grid two">
+            <div class="control-group">
+              <label for="qa-task-filter">Task subset</label>
+              <select id="qa-task-filter"><option value="all">All tasks</option></select>
+            </div>
+            <div class="control-group">
+              <label for="qa-domain-filter">Chemical field</label>
+              <select id="qa-domain-filter">
+                <option value="all">All chemical fields</option>
+                <option value="organic">Organic chemistry</option>
+                <option value="inorganic">Inorganic chemistry</option>
+                <option value="physical">Physical chemistry</option>
+                <option value="analytical">Analytical chemistry</option>
+                <option value="biochemistry">Biochemistry</option>
+                <option value="materials">Materials chemistry</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="control-grid two">
+            <div class="control-group">
+              <label for="qa-metric">Metric</label>
+              <select id="qa-metric">
+                <option value="protocol_correct">protocol_correct / planned</option>
+                <option value="content_match">content_match / planned</option>
+                <option value="protocol_valid">protocol_valid / planned</option>
+                <option value="conditional_accuracy">protocol_correct / protocol_valid</option>
+                <option value="S_total">oMeBench mean S_total</option>
+                <option value="S_partial">oMeBench mean S_partial</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <label for="qa-chart-type">Chart</label>
+              <select id="qa-chart-type">
+                <option value="heatmap">Heatmap</option>
+                <option value="bar">Grouped bars</option>
+                <option value="dot">Dot plot</option>
+              </select>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="qa-sort">Order</label>
+            <select id="qa-sort">
+              <option value="fixed">Fixed model order</option>
+              <option value="name">Model name</option>
+              <option value="score">Current single-benchmark metric</option>
+            </select>
+          </div>
+          <button id="qa-reset" type="button" class="reset-button">Reset QA view</button>
+        </section>
+
+        <section id="index-controls" hidden>
+          <div class="control-group">
+            <div class="control-heading"><span>Models</span><span>3 planned</span></div>
+            <div id="index-model-checks" class="check-list"></div>
+          </div>
+          <div class="control-group">
+            <div class="control-heading"><span>Conditions</span><span>A0 / A1 / A2</span></div>
+            <div id="index-condition-checks" class="check-list"></div>
+          </div>
+          <div class="control-group">
+            <label for="index-metric">Metric</label>
+            <select id="index-metric">
+              <option value="exact_set_correct">exact_set_correct</option>
+              <option value="protocol_valid">protocol_valid</option>
+            </select>
+          </div>
+          <button id="index-reset" type="button" class="reset-button">Reset index view</button>
+        </section>
+
+        <section id="crystal-controls" hidden>
+          <div class="control-group">
+            <div class="control-heading"><span>Models</span><span>3 models</span></div>
+            <div id="crystal-model-checks" class="check-list"></div>
+          </div>
+          <div class="control-group">
+            <div class="control-heading"><span>Conditions</span><span>S0 / S1</span></div>
+            <div id="crystal-condition-checks" class="check-list"></div>
+          </div>
+          <div class="control-group">
+            <label for="crystal-path">Scoring path</label>
+            <select id="crystal-path">
+              <option value="strict">Direct parse · no upstream postprocessing</option>
+              <option value="repaired">Author postprocessing</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="crystal-metric">Metric</label>
+            <select id="crystal-metric">
+              <option value="parse">Parse</option>
+              <option value="composition">Composition</option>
+              <option value="geometry">Periodic geometry</option>
+              <option value="reference">Reference match</option>
+              <option value="spacegroup">Space-group agreement</option>
+              <option value="task_success" selected>TaskSuccess</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="crystal-unit">Unit</label>
+            <select id="crystal-unit">
+              <option value="candidate">Candidate · n=24 per condition</option>
+              <option value="structure_at1">Structure @1 · first candidate</option>
+              <option value="structure_at2">Structure @2 · either candidate</option>
+            </select>
+          </div>
+          <button id="crystal-reset" type="button" class="reset-button">Reset crystal view</button>
+        </section>
+      </aside>
+
+      <section class="results-column" aria-label="Comparison results">
+        <section class="summary-card">
+          <div>
+            <p class="eyebrow">CURRENT VIEW</p>
+            <h2 id="view-title">QA overview</h2>
+            <p id="view-subtitle"></p>
+          </div>
+          <div class="summary-stats" id="summary-stats"></div>
+        </section>
+        <div id="filter-chips" class="filter-chips" aria-label="Current filters"></div>
+        <p id="metric-note" class="metric-note"></p>
+
+        <section class="panel chart-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">COMPARISON</p><h2 id="chart-title">Model × benchmark</h2></div>
+            <div class="export-actions">
+              <button id="export-chart" type="button" class="secondary">Export chart SVG</button>
+              <button id="export-summary" type="button" class="secondary">Export summary CSV</button>
+            </div>
+          </div>
+          <div id="chart-empty" class="empty-state" hidden>No items</div>
+          <div id="chart" class="chart-wrap" aria-live="polite"></div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">NUMBERS</p><h2>Selected cells</h2></div>
+            <span id="table-count" class="table-count"></span>
+          </div>
+          <div class="table-scroll">
+            <table id="summary-table">
+              <thead id="summary-head"></thead>
+              <tbody id="summary-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <section class="panel detail-panel" id="detail-section" aria-label="Item drill-down">
+      <div class="panel-heading detail-heading">
+        <div>
+          <p class="eyebrow">QUESTION-LEVEL EVIDENCE</p>
+          <h2 id="detail-title">Select a chart or table cell</h2>
+          <p id="detail-context"></p>
+        </div>
+        <button id="export-items" type="button" class="secondary" disabled>Export filtered item CSV</button>
+      </div>
+      <div id="detail-controls" class="detail-controls" hidden>
+        <div><label for="detail-search">Question ID / text</label><input id="detail-search" type="search" placeholder="Search question ID or prompt"></div>
+        <div><label for="detail-status">Display filter</label><select id="detail-status">
+          <option value="all">All items</option>
+          <option value="wrong">Focus model incorrect</option>
+          <option value="correct">Focus model correct</option>
+          <option value="invalid">Protocol invalid</option>
+          <option value="length">Length stop</option>
+          <option value="missing">Missing / not executed</option>
+        </select></div>
+        <div><label for="detail-pattern">Model comparison</label><select id="detail-pattern">
+          <option value="all">All patterns</option>
+          <option value="disagree">Models disagree</option>
+          <option value="unique">Exactly one model correct</option>
+          <option value="all_correct">All selected correct</option>
+          <option value="all_wrong">All selected wrong</option>
+        </select></div>
+      </div>
+      <div id="detail-filter-note" class="detail-filter-note"></div>
+      <div id="detail-list" class="detail-list"><div class="empty-state">Select a heatmap, chart, or numerical-table cell to inspect the prompt, gold answer, raw responses, and scoring status.</div></div>
+      <div id="pagination" class="pagination" hidden>
+        <button id="page-prev" type="button">Previous</button>
+        <span id="page-label"></span>
+        <button id="page-next" type="button">Next</button>
+      </div>
+    </section>
+
+    <details class="panel methods-panel">
+      <summary>Metrics, denominators, and data status</summary>
+      <div class="methods-content">
+        <p><strong>Chemistry lens:</strong> Organic, Inorganic, Physical, Analytical, Biochemistry, and Materials are mutually exclusive primary fields. Computational chemistry is a cross-cutting tag over 11 Physical, 3 Organic, and 1 Materials ChemBench questions. Source benchmark and original labels remain visible in every item.</p>
+        <p><strong>QA default:</strong> <code>protocol_correct / planned</code>. Incorrect, format-invalid, and length-stopped responses remain in the planned denominator. Item filters change only the evidence list below, not the aggregate denominator above.</p>
+        <p><strong>content_match</strong> is the existing extractor's content match, not a human semantic review. <strong>Conditional accuracy</strong> uses only protocol-valid responses as its denominator and does not replace the default score.</p>
+        <p><strong>oMeBench:</strong> exact mechanism match, <code>S_total</code>, and <code>S_partial</code> are reported separately. Partial alignment with the reference mechanism does not establish chemical feasibility.</p>
+        <p><strong>Atom-index control:</strong> the statistical unit is ten molecules. DeepSeek's 30 planned cells were not executed and remain N/A; historical QA answers are not substituted.</p>
+        <p><strong>Crystal:</strong> direct parsing excludes the author's upstream postprocessing but retains the existing parser tolerances. Author-postprocessed results are shown separately. Candidate, structure @1, and structure @2 views use different denominators. No energy, stability, or synthesizability metric is available.</p>
+        <p>The two OmniChem human-review forms remain pending. This explorer shows frozen scores and verbatim raw responses; it does not report human content accuracy or inter-reviewer agreement.</p>
+      </div>
+    </details>
+  </main>
+
+  <footer>
+    Local-only explorer · no remote scripts, tracking, model calls, or mixed total score
+  </footer>
+  <div id="live-region" class="sr-only" aria-live="polite"></div>
+</body>
+</html>

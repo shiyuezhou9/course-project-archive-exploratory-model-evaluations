@@ -1,0 +1,22 @@
+{
+  "source": "web_explainer snapshot; packaging only",
+  "copied_sha256": {
+    "index.html": "ede91356d5b18aecb93a6a9b459688e018fff3af65c5916ef2c573ff05cd20dc",
+    "app.js": "1ef31759d6e9cb39918595dd937864a3295001699560397071b905c164b4189f",
+    "style.css": "ff4cdb317de751e9879ab49f68f8ca7d8964ab5cbf02a33bd22105346794e3b2",
+    "DATA_DICTIONARY.md": "1febb8b54a99db176e726d9a4e0f05298dbef1f030b4a80ee36a56dbd8e0ee95",
+    "data/explorer-data.js": "adb66717d5781cb454b49840269cc719eaf758f94f4dae0b7c42ca8aa5edaeec",
+    "data/explorer.json": "a481d437484aa4198f04b4736aec58e4c63f16b84e8d1217ba0be103b81373ac",
+    "data/chemistry_field_mapping.csv": "58c3ad7dc4ef898237f623ae5666203f9cc424629d3203a8b6db8e99927a1c61",
+    "data/source_manifest.json": "7c2925eb3c6abb0619898cbd22715be9125164ba1d474d59259f5b6514db3f96",
+    "assets/pair06_numbered_structure.png": "35e9fa66b1691c6eda5687eafe75f7bf1269af4d24b33078604c52a12e2965e3"
+  },
+  "standalone_sha256": "5a6369400c56c34a534ad8b6993e61f62a9d320610ea98ae3b7383cf1001f513",
+  "standalone_transforms": [
+    "inline CSS",
+    "scripts after DOM",
+    "inline original PNG as data URI"
+  ],
+  "model_calls": 0,
+  "scores_changed": false
+}
